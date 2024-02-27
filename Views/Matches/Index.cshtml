@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Matches";
+}
+
+@model IEnumerable<Match>
+
+<div class="matches-container">
+    @foreach (var match in Model)
+    {
+        <div class="match @((match.IsPlayed) ? "played" : "upcoming")">
+            @if (!match.IsPlayed || (match.ScorePlayerOne == 0 && match.ScorePlayerTwo == 0))
+            {
+                <span class="players">@match.PlayerOne<span class="score">[TBD]  </span> @match.PlayerTwo</span>
+            }
+            else
+            {
+                <span class="players">@match.PlayerOne<span class="score">@match.ScorePlayerOne - @match.ScorePlayerTwo  </span> @match.PlayerTwo</span>
+            }
+            <span class="date">@match.Datum.ToString("dd MMM yyyy")</span>
+        </div>
+    }
+</div>

@@ -1,0 +1,86 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+.matches-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.match {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.match.played {
+    background-color: #e9ffe9;
+}
+
+.match.upcoming {
+    background-color: #fff0f0;
+}
+
+.players {
+    font-weight: bold;
+}
+
+.score {
+    margin-left: 10px;
+    color: #666;
+}
+
+.date {
+    float: right;
+    color: #999;
+}
+/* Styles voor de loginpagina */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+h2 {
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.checkbox {
+    margin-top: 10px;
+}
+
+.text-danger {
+    color: #a94442;
+}
+
+.btn-primary {
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+
+    .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+        background-color: #286090;
+        border-color: #204d74;
+    }
