@@ -33,6 +33,16 @@
                         </button>
                     </form>
                 </td>
+                <td>
+                    <form asp-action="AssignRonde" asp-controller="AdminPanel" method="post">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <select name="ronde" onchange="this.form.submit()">
+                            <option selected disabled>Assign Ronde</option>
+                            <option value="ARonde">A Ronde</option>
+                            <option value="BRonde">B Ronde</option>
+                        </select>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

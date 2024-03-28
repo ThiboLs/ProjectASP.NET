@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ProjectASP.Models;
 using System;
@@ -17,9 +18,13 @@ namespace ProjectASP.Controllers
         }
 
         // GET: Matches
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string ronde)
         {
-            return View(await _context.Matches.ToListAsync());
+            var matches = !string.IsNullOrWhiteSpace(ronde) ?
+                await _context.Matches.Where(m => m.Ronde == ronde).ToListAsync() :
+                await _context.Matches.ToListAsync();
+
+            return View(matches);
         }
 
         // Action voor het ophalen van gebruikersnamen uit de database
@@ -29,7 +34,6 @@ namespace ProjectASP.Controllers
             return Json(users);
         }
 
-        // GET: Matches/Add
         public IActionResult Add()
         {
             return View();
@@ -47,6 +51,7 @@ namespace ProjectASP.Controllers
                     ScorePlayerOne = model.ScorePlayerOne,
                     ScorePlayerTwo = model.ScorePlayerTwo,
                     IsPlayed = model.IsPlayed,
+                    Ronde = model.Ronde,
                     Datum = model.Datum
                 };
 
@@ -56,6 +61,7 @@ namespace ProjectASP.Controllers
             }
             return BadRequest(); // Return een fout statuscode
         }
+
         [HttpDelete]
         public async Task<IActionResult> Delete(int id)
         {
@@ -69,6 +75,56 @@ namespace ProjectASP.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateScores(int id, [FromBody] ScoreUpdateViewModel scoreUpdate)
+        {
+            if (id != scoreUpdate.MatchId)
+            {
+                return BadRequest("Mismatched match ID.");
+            }
+
+            var match = await _context.Matches.FindAsync(id);
+            if (match == null)
+            {
+                return NotFound("Match not found.");
+            }
+
+            try
+            {
+                match.ScorePlayerOne = scoreUpdate.ScorePlayerOne;
+                match.ScorePlayerTwo = scoreUpdate.ScorePlayerTwo;
+                match.IsPlayed = true;
+                match.IsApproved = false;
+
+                _context.Entry(match).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error updating match: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveScores(int id)
+        {
+            var match = await _context.Matches.FindAsync(id);
+            if (match == null)
+            {
+                return NotFound("Match not found.");
+            }
+
+            match.IsApproved = true;
+            _context.Entry(match).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
 
 
         // Hier voeg je andere acties toe zoals Edit, Delete, enzovoort

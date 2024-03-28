@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProjectASP.Models;
 
 
 namespace ProjectASP.Controllers
@@ -13,10 +14,25 @@ namespace ProjectASP.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+
+
+        public async Task<IActionResult> Index(string ronde)
         {
-            // Logica voor het ophalen van de scores en deze doorsturen naar de view
-            return View(await _context.Users.ToListAsync()); // Pas aan op basis van je implementatie
+            IEnumerable<Match> matches;
+
+            // Check of de ronde parameter een niet-lege string is
+            if (!string.IsNullOrWhiteSpace(ronde))
+            {
+                // Filter de matches op de gegeven ronde
+                matches = await _context.Matches.Where(m => m.Ronde == ronde).ToListAsync();
+            }
+            else
+            {
+                // Haal alle matches op als er geen specifieke ronde is opgegeven
+                matches = await _context.Matches.ToListAsync();
+            }
+
+            return View(matches);
         }
     }
 

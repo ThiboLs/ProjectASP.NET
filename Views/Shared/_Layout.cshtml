@@ -32,7 +32,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Scoreboard" asp-action="Index">Scoreboard</a>
                         </li>
-                        @if (User.Identity.IsAuthenticated)
+                        @if(User.Identity.IsAuthenticated)
                         {
                             var user = await UserManager.GetUserAsync(User);
                             if (user != null)
@@ -58,8 +58,6 @@
                         {
                             <a href="@Url.Action("Login", "Account")" class="nav-link text-dark">Login</a>
                         }
-
-
                     </ul>
                 </div>
             </div>

@@ -1,8 +1,85 @@
-﻿@{
-    ViewData["Title"] = "Scoreboard";
+﻿@model IEnumerable<ProjectASP.Models.Match>
+
+@{
+    var playerStatistics = new Dictionary<string, (int Points, int WonMatches, int WonLegs)>();
+
+    foreach (var match in Model.Where(m => m.IsPlayed && m.IsApproved))
+    {
+        // Veronderstelt dat PlayerOne en PlayerTwo strings zijn. Als het objecten zijn, moet je mogelijk .Name toevoegen.
+        var playerOneKey = match.PlayerOne;
+        var playerTwoKey = match.PlayerTwo;
+
+        if (!playerStatistics.ContainsKey(playerOneKey))
+        {
+            playerStatistics[playerOneKey] = (0, 0, 0);
+        }
+        if (!playerStatistics.ContainsKey(playerTwoKey))
+        {
+            playerStatistics[playerTwoKey] = (0, 0, 0);
+        }
+
+        if (match.ScorePlayerOne > match.ScorePlayerTwo) // Speler een wint
+        {
+            playerStatistics[playerOneKey] = (
+                playerStatistics[playerOneKey].Points + 3,
+                playerStatistics[playerOneKey].WonMatches + 1,
+                playerStatistics[playerOneKey].WonLegs + match.ScorePlayerOne
+            );
+            playerStatistics[playerTwoKey] = (
+                playerStatistics[playerTwoKey].Points,
+                playerStatistics[playerTwoKey].WonMatches,
+                playerStatistics[playerTwoKey].WonLegs + match.ScorePlayerTwo
+            );
+        }
+        else if (match.ScorePlayerOne < match.ScorePlayerTwo) // Speler twee wint
+        {
+            playerStatistics[playerTwoKey] = (
+                playerStatistics[playerTwoKey].Points + 3,
+                playerStatistics[playerTwoKey].WonMatches + 1,
+                playerStatistics[playerTwoKey].WonLegs + match.ScorePlayerTwo
+            );
+            playerStatistics[playerOneKey] = (
+                playerStatistics[playerOneKey].Points,
+                playerStatistics[playerOneKey].WonMatches,
+                playerStatistics[playerOneKey].WonLegs + match.ScorePlayerOne
+            );
+        }
+        // Gelijkspel kan je ook toevoegen indien van toepassing
+    }
+
+    var sortedPlayerStatistics = playerStatistics.OrderByDescending(ps => ps.Value.Points)
+                                                  .ThenByDescending(ps => ps.Value.WonMatches)
+                                                  .ToList();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Ranglijst tabel -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Naam</th>
+            <th>Punten</th>
+            <th>Aantal Gewonnen Matchen</th>
+            <th>Aantal Legs</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < sortedPlayerStatistics.Count; i++)
+        {
+            var rank = i + 1;
+            var player = sortedPlayerStatistics[i];
+            var style = "";
+            if (rank == 1) { style = "background-color: gold;"; }
+            else if (rank == 2) { style = "background-color: silver;"; }
+            else if (rank == 3) { style = "background-color: #cd7f32;"; } // Bronskleur
+
+            <tr style="@style">
+                <td>@rank</td>
+                <td>@player.Key</td>
+                <td>@player.Value.Points</td>
+                <td>@player.Value.WonMatches</td>
+                <td>@player.Value.WonLegs</td>
+            </tr>
+        }
+    </tbody>
+</table>

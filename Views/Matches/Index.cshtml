@@ -1,13 +1,24 @@
 ﻿@model IEnumerable<ProjectASP.Models.Match>
 
+<button onclick="loadMatches('ARonde')">A Ronde</button>
+<button onclick="loadMatches('BRonde')">B Ronde</button>
+
 <div class="matches-container">
     @foreach (var match in Model)
     {
-        <div class="match-container">
-            <div class="match @((match.IsPlayed) ? "played" : "upcoming")">
-                @if (!match.IsPlayed || (match.ScorePlayerOne == 0 && match.ScorePlayerTwo == 0))
+        var backgroundColor = match.IsPlayed
+        ? (match.IsApproved ? "#90EE90" : "#FFD580")
+        : "#FFCCCB"; // Lichtgroen voor goedgekeurd, lichtoranje voor ingevuld maar niet goedgekeurd, en lichtrood voor nog niet gespeeld.
+
+        <div class="match-container" >
+            <div class="match" style="background-color: @backgroundColor; border: 1px solid @backgroundColor; border-radius: 4px; padding: 10px; margin-bottom: 10px;">
+                @if (!match.IsPlayed)
                 {
-                    <span class="players">@match.PlayerOne<span class="score">[TBD]  </span> @match.PlayerTwo</span>
+                    <span class="players">@match.PlayerOne<span class="score">[Nog te spelen]  </span> @match.PlayerTwo</span>
+                }
+                else if (!match.IsApproved)
+                {
+                    <span class="players">@match.PlayerOne<span class="score">@match.ScorePlayerOne - @match.ScorePlayerTwo [Wacht op goedkeuring]  </span> @match.PlayerTwo</span>
                 }
                 else
                 {
@@ -18,17 +29,22 @@
                 <div class="buttons-container">
                     @if (!match.IsPlayed || (match.ScorePlayerOne == 0 && match.ScorePlayerTwo == 0))
                     {
-                        <button class="btn btn-primary btn-sm" onclick="showScoreInput(@match.MatchId)">Vul scores in</button>
+                        <button class="btn btn-primary btn-sm" onclick="showScoreInput('@match.PlayerOne', '@match.PlayerTwo', @match.MatchId)">Vul scores in</button>
                     }
                     @if (User.IsInRole("Admin"))
                     {
                         <button class="btn btn-danger btn-sm delete-match-btn" onclick="deleteMatch(@match.MatchId)">Verwijder Match</button>
+                        if (!match.IsApproved)
+                        {
+                            <button class="btn btn-success btn-sm" onclick="approveScores(@match.MatchId)">Goedkeuren</button>
+                        }
                     }
                 </div>
             </div>
         </div>
     }
 </div>
+
 
 @if (User.IsInRole("Admin"))
 {
@@ -58,10 +74,45 @@
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label for="ronde" class="form-label">Ronde</label>
+                        <select class="form-select" id="ronde" name="Ronde">
+                            <option value="ARonde" id="ARonde">ARonde</option>
+                            <option value="BRonde" id="BRonde">BRonde</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label for="matchDate" class="form-label">Datum</label>
                         <input type="date" class="form-control" id="matchDate" name="matchDate">
                     </div>
                     <button type="submit" class="btn btn-primary">Match toevoegen</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modaal venster voor het invullen van scores -->
+<div class="modal fade" id="scoreInputModal" tabindex="-1" aria-labelledby="scoreInputModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scoreInputModalLabel">Scores invullen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scoreInputForm">
+                    <div class="mb-3">
+                        <!-- Hier gebruik je de spelernamen in de label -->
+                        <label for="scorePlayerOne" class="form-label">Score voor <span id="playerOneLabel"></span></label>
+                        <input type="number" class="form-control" id="scorePlayerOne" name="scorePlayerOne">
+                    </div>
+                    <div class="mb-3">
+                        <!-- Hier gebruik je de spelernamen in de label -->
+                        <label for="scorePlayerTwo" class="form-label">Score voor <span id="playerTwoLabel"></span></label>
+                        <input type="number" class="form-control" id="scorePlayerTwo" name="scorePlayerTwo">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Opslaan</button>
                 </form>
             </div>
         </div>
@@ -102,6 +153,7 @@
                 ScorePlayerOne: 0,
                 ScorePlayerTwo: 0,
                 IsPlayed: false,
+                Ronde: $('#ronde').val(), // Haal de geselecteerde waarde van de dropdown "Ronde" op
                 Datum: $('#matchDate').val()
             };
 
@@ -126,31 +178,92 @@
             }
         });
 
-        function deleteMatch(matchId) {
+        async function deleteMatch(matchId) {
             const confirmation = confirm("Weet je zeker dat je deze match wilt verwijderen?");
 
             if (confirmation) {
-                fetch('@Url.Action("Delete", "Matches")', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: matchId }) // Zorg ervoor dat het matchId correct in een JSON-object is opgenomen
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            alert('Match succesvol verwijderd.');
-                            // Herlaad de pagina
-                            window.location.reload();
-                        } else {
-                            console.error('Fout bij het verwijderen van de match.');
+                try {
+                    const response = await fetch(`@Url.Action("Delete", "Matches")/${matchId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
                         }
-                    })
-                    .catch(error => {
-                        console.error('Er is een fout opgetreden bij het verwijderen van de match:', error);
                     });
+
+                    if (response.ok) {
+                        alert('Match succesvol verwijderd.');
+                        // Herlaad de pagina
+                        window.location.reload();
+                    } else {
+                        console.error('Fout bij het verwijderen van de match.');
+                    }
+                } catch (error) {
+                    console.error('Er is een fout opgetreden bij het verwijderen van de match:', error);
+                }
             }
         }
+
+        async function showScoreInput(playerOneName, playerTwoName, matchId) {
+            $('#playerOneLabel').text(playerOneName);
+            $('#playerTwoLabel').text(playerTwoName);
+
+            $('#scoreInputModal').modal('show');
+
+            $('#scoreInputForm').submit(async function (event) {
+                event.preventDefault();
+
+                const scoreData = {
+                    MatchId: matchId, 
+                    ScorePlayerOne: parseInt($('#scorePlayerOne').val()),
+                    ScorePlayerTwo: parseInt($('#scorePlayerTwo').val()),
+                    IsPlayed: true
+                };
+                try {
+                    const response = await fetch('@Url.Action("UpdateScores", "Matches")/' + matchId, {
+                        method: 'POST', 
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(scoreData)
+                    });
+                    console.log(response)
+                    if (response.ok) {
+                        $('#scoreInputModal').modal('hide');
+                        window.location.reload();
+                    } else {
+                        console.error('Bijwerken van scores is mislukt');
+                    }
+                } catch (error) {
+                    console.error('Er is een fout opgetreden bij het bijwerken van de scores:', error);
+                }
+            });
+        }
+
+        async function approveScores(matchId) {
+            try {
+                const response = await fetch(`@Url.Action("ApproveScores", "Matches")/${matchId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Scores goedgekeurd.');
+                    window.location.reload();
+                } else {
+                    console.error('Fout bij het goedkeuren van de scores.');
+                }
+            } catch (error) {
+                console.error('Er is een fout opgetreden bij het goedkeuren van de scores:', error);
+            }
+        }
+
+        function loadMatches(ronde) {
+            window.location.href = '@Url.Action("Index", "Matches")?ronde=' + ronde;
+        }
+
+
 
 
     </script>
