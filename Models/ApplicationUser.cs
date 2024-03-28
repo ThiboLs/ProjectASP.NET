@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System;
 
 namespace ProjectASP.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        // Je kunt hier extra properties toevoegen die je nodig hebt voor de gebruiker
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateTimeOffset? LockoutEnd { get; set; }
+        public DateTimeOffset? BirthDate { get; set; }
     }
 }

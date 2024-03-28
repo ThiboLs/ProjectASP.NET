@@ -1,0 +1,39 @@
+﻿@model List<ApplicationUser>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Gebruikersnaam</th>
+            <th>E-mailadres</th>
+            <th>Rollen</th>
+            <th>Actie</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>@user.Email</td>
+                <td>
+                    @foreach (var role in await UserManager.GetRolesAsync(user))
+                    {
+                        <span>@role</span>
+
+                        <br />
+                    }
+                </td>
+                <td>
+                    <form asp-action="ToggleAdmin" asp-controller="AdminPanel" method="post">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" class="btn btn-primary">
+                            @(User.IsInRole("Admin") && !User.Identity.Name.Equals(user.UserName, StringComparison.OrdinalIgnoreCase) && (await UserManager.IsInRoleAsync(user, "Admin")) ? "Remove Admin" : "Make Admin")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

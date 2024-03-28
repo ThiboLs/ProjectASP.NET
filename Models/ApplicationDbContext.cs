@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProjectASP.Models;
-using System.Collections.Generic;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
