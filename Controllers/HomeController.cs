@@ -23,12 +23,10 @@ namespace ProjectASP.Controllers
 
             if (user != null)
             {
-                // Check if the user is not already in the "Admin" role
                 if (!await _userManager.IsInRoleAsync(user, "Admin"))
                 {
-                    // Add the user to the "Admin" role
                     await _userManager.AddToRoleAsync(user, "Admin");
-                    Console.WriteLine(user + " is now Admin");
+                    Console.WriteLine(user + " is now Administrator");
                 }
                 else
                 {

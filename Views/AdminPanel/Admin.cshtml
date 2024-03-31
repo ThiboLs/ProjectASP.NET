@@ -26,22 +26,19 @@
                     }
                 </td>
                 <td>
-                    <form asp-action="ToggleAdmin" asp-controller="AdminPanel" method="post">
-                        <input type="hidden" name="userId" value="@user.Id" />
-                        <button type="submit" class="btn btn-primary">
-                            @(User.IsInRole("Admin") && !User.Identity.Name.Equals(user.UserName, StringComparison.OrdinalIgnoreCase) && (await UserManager.IsInRoleAsync(user, "Admin")) ? "Remove Admin" : "Make Admin")
-                        </button>
-                    </form>
-                </td>
-                <td>
-                    <form asp-action="AssignRonde" asp-controller="AdminPanel" method="post">
-                        <input type="hidden" name="userId" value="@user.Id" />
-                        <select name="ronde" onchange="this.form.submit()">
-                            <option selected disabled>Assign Ronde</option>
-                            <option value="ARonde">A Ronde</option>
-                            <option value="BRonde">B Ronde</option>
-                        </select>
-                    </form>
+                    @if (User.Identity.Name.Equals(user.UserName, StringComparison.OrdinalIgnoreCase) || user.Email.Equals("thibo.2004@icloud.com", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span>ServerBeheerder</span>
+                    }
+                    else
+                    {
+                        <form asp-action="ToggleAdmin" asp-controller="AdminPanel" method="post">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn btn-primary">
+                                @(User.IsInRole("Admin") && (await UserManager.IsInRoleAsync(user, "Admin")) ? "Verwijder Bestuur" : "Maak Bestuur")
+                            </button>
+                        </form>
+                    }
                 </td>
             </tr>
         }

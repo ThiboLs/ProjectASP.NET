@@ -66,7 +66,7 @@ namespace ProjectASP.Controllers
                 await _userManager.AddToRoleAsync(user, "Admin");
             }
 
-            return RedirectToAction(nameof(Index));
+             return RedirectToAction("Admin", "AdminPanel");
         }
 
     }

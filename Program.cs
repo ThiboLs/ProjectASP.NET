@@ -47,7 +47,6 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
     if (!roleManager.RoleExistsAsync("Admin").Result)
     {
         roleManager.CreateAsync(new IdentityRole("Admin")).Wait();

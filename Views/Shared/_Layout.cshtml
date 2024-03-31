@@ -16,7 +16,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DartsMatcher</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Lindewijkpikkers</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -27,11 +27,12 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Matches" asp-action="Index">Matches</a>
+                            <a class="nav-link text-dark" href="/Matches?ronde=ARonde">Matches</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Scoreboard" asp-action="Index">Scoreboard</a>
+                            <a class="nav-link text-dark" href="/Scoreboard?ronde=ARonde">Scoreboard</a>
                         </li>
+
                         @if(User.Identity.IsAuthenticated)
                         {
                             var user = await UserManager.GetUserAsync(User);
@@ -46,7 +47,7 @@
                                         {
                                             <a class="dropdown-item" href="@Url.Action("Admin", "AdminPanel")">Admin Pagina</a>
                                         }
-                                        <a class="dropdown-item" href="#">Gebruiker Pagina</a>
+                                        <a class="dropdown-item" href="@Url.Action("Index", "User")">Gebruiker Pagina</a> 
                                         <form method="post" asp-controller="Account" asp-action="Logout">
                                             <button type="submit" class="dropdown-item">Logout</button>
                                         </form>
@@ -71,7 +72,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2024 - DartsMatcher - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2024 - LindewijkPikkers<a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

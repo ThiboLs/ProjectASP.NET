@@ -13,6 +13,11 @@ namespace ProjectASP.Controllers
             _context = context;
         }
 
+        public IActionResult Index()
+        {
+            return View("Admin");
+        }
+
         // Methoden voor het beheer van wedstrijden en gebruikersgoedkeuringen
     }
 

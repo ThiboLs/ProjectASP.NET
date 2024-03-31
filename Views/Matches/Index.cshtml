@@ -27,17 +27,22 @@
                 <span class="date">@match.Datum.ToString("dd MMM yyyy")</span>
 
                 <div class="buttons-container">
-                    @if (!match.IsPlayed || (match.ScorePlayerOne == 0 && match.ScorePlayerTwo == 0))
+                    @if (User.Identity.IsAuthenticated && !match.IsPlayed || (match.ScorePlayerOne == 0 && match.ScorePlayerTwo == 0))
                     {
                         <button class="btn btn-primary btn-sm" onclick="showScoreInput('@match.PlayerOne', '@match.PlayerTwo', @match.MatchId)">Vul scores in</button>
                     }
                     @if (User.IsInRole("Admin"))
                     {
                         <button class="btn btn-danger btn-sm delete-match-btn" onclick="deleteMatch(@match.MatchId)">Verwijder Match</button>
-                        if (!match.IsApproved)
+                        if (!match.IsApproved && match.IsPlayed)
                         {
                             <button class="btn btn-success btn-sm" onclick="approveScores(@match.MatchId)">Goedkeuren</button>
                         }
+                        if (!match.IsApproved && match.IsPlayed)
+                        {
+                            <button class="btn btn-primary btn-sm" onclick="showScoreEditModal('@match.PlayerOne', '@match.PlayerTwo', @match.MatchId, @match.ScorePlayerOne, @match.ScorePlayerTwo)">Wijzig Scores</button>
+                        }
+
                     }
                 </div>
             </div>
@@ -118,6 +123,30 @@
         </div>
     </div>
 </div>
+<!-- Modaal venster voor het bijwerken van scores -->
+<div class="modal fade" id="scoreEditModal" tabindex="-1" aria-labelledby="scoreEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="scoreEditModalLabel">Scores Wijzigen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scoreEditForm">
+                    <div class="mb-3">
+                        <label for="editScorePlayerOne" class="form-label">Score voor <span id="editPlayerOneLabel"></span></label>
+                        <input type="number" class="form-control" id="editScorePlayerOne" name="editScorePlayerOne">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editScorePlayerTwo" class="form-label">Score voor <span id="editPlayerTwoLabel"></span></label>
+                        <input type="number" class="form-control" id="editScorePlayerTwo" name="editScorePlayerTwo">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
@@ -153,7 +182,7 @@
                 ScorePlayerOne: 0,
                 ScorePlayerTwo: 0,
                 IsPlayed: false,
-                Ronde: $('#ronde').val(), // Haal de geselecteerde waarde van de dropdown "Ronde" op
+                Ronde: $('#ronde').val(), 
                 Datum: $('#matchDate').val()
             };
 
@@ -170,6 +199,7 @@
 
                 if (response.ok) {
                     window.location.href = '@Url.Action("Index", "Matches")';
+                    window.location.reload();
                 } else {
                     console.error('Toevoegen van match is mislukt');
                 }
@@ -229,6 +259,43 @@
                     console.log(response)
                     if (response.ok) {
                         $('#scoreInputModal').modal('hide');
+                        window.location.reload();
+                    } else {
+                        console.error('Bijwerken van scores is mislukt');
+                    }
+                } catch (error) {
+                    console.error('Er is een fout opgetreden bij het bijwerken van de scores:', error);
+                }
+            });
+        }
+
+        function showScoreEditModal(playerOneName, playerTwoName, matchId, scorePlayerOne, scorePlayerTwo) {
+            $('#editPlayerOneLabel').text(playerOneName);
+            $('#editPlayerTwoLabel').text(playerTwoName);
+            $('#editScorePlayerOne').val(scorePlayerOne);
+            $('#editScorePlayerTwo').val(scorePlayerTwo);
+
+            $('#scoreEditModal').modal('show');
+
+            $('#scoreEditForm').submit(async function (event) {
+                event.preventDefault();
+
+                const scoreData = {
+                    MatchId: matchId,
+                    ScorePlayerOne: parseInt($('#editScorePlayerOne').val()),
+                    ScorePlayerTwo: parseInt($('#editScorePlayerTwo').val()),
+                    IsPlayed: true
+                };
+                try {
+                    const response = await fetch('@Url.Action("UpdateScores", "Matches")/' + matchId, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(scoreData)
+                    });
+                    if (response.ok) {
+                        $('#scoreEditModal').modal('hide');
                         window.location.reload();
                     } else {
                         console.error('Bijwerken van scores is mislukt');

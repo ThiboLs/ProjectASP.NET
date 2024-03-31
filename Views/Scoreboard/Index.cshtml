@@ -3,6 +3,11 @@
 @{
     var playerStatistics = new Dictionary<string, (int Points, int WonMatches, int WonLegs)>();
 
+    <div>
+        <button onclick="loadScoreboard('ARonde')">Scorebord A Ronde</button>
+        <button onclick="loadScoreboard('BRonde')">Scorebord B Ronde</button>
+    </div>
+
     foreach (var match in Model.Where(m => m.IsPlayed && m.IsApproved))
     {
         // Veronderstelt dat PlayerOne en PlayerTwo strings zijn. Als het objecten zijn, moet je mogelijk .Name toevoegen.
@@ -83,3 +88,12 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        function loadScoreboard(ronde) {
+            window.location.href = '@Url.Action("Index", "Scoreboard")?ronde=' + ronde;
+        }
+    </script>
+}
+
